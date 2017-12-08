@@ -28,15 +28,26 @@ def get_gpu_memory(gpu):
     return total, used, free
 
 
+# Pull current power information
+def get_gpu_power(gpu):
+    cmd_pwr_draw = subprocess.check_output('nvidia-smi --query-gpu="power.draw" --format=csv,noheader,nounits --id={}'.format(gpu), shell=True).decode('utf-8').rstrip()
+    cmd_pwr_limit = subprocess.check_output('nvidia-smi --query-gpu="power.limit" --format=csv,noheader,nounits --id={}'.format(gpu), shell=True).decode('utf-8').rstrip()
+    draw, limit = (cmd_pwr_draw, cmd_pwr_limit)
+    return draw
+
+
 def main():
     gpu_uuid = subprocess.check_output(cmd_gpu_uuid, shell=True).decode('utf-8')
     gpu_uuid_list = gpu_uuid.split('\n')
 
     for gpu in gpu_uuid_list:
         if 'GPU-' in gpu:
+            print('='*100)
+            print('GPU ID: {}'.format(gpu))
             print('Current Temp: ', get_gpu_temp(gpu))
             print('Current Fan Speed: ', get_gpu_fan_speed(gpu))
             print('Current Memory: T:{} U:{} F:{}'.format(get_gpu_memory(gpu)[0], get_gpu_memory(gpu)[1], get_gpu_memory(gpu)[2]))
+            print('Current Power Draw: D:{} L:{}'.format(get_gpu_power(gpu)[0], get_gpu_power(gpu)[1]))
 
 if __name__ == '__main__':
     main()
